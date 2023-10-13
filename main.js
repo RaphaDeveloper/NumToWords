@@ -2,76 +2,118 @@
 // ex: 123 -> "one hundred twenty three"
 // range: 0-2**32 (~4.3B)
 
-const numToWords = (num) => {
-    const units = {
-                    '0': '',
-                    '1': "One",
-                    '2': "Two",
-                    '3': "Three",
-                    '4': "Four",
-                    '5': "Five",
-                    '6': "Six",
-                    '7': "Seven",
-                    '8': "Eight",
-                    '9': "Nine",
-                  };
-                  
-    const dozens = {
-                    '10': "Ten",
-                    '11': "Eleven",
-                    '12': "Tweve",
-                    '13': "Thirteen",
-                    '14': "Fourteen",
-                    '15': "Fifteen",
-                    '16': "Sixteen",
-                    '17': "Seventeen",
-                    '18': "Eighteen",
-                    '19': "Nineteen",
-                    '2': "Twenty",
-                    '3': "Thirty",
-                    '4': "Forty",
-                    '5': "Fifty",
-                    '6': "Sixty",
-                    '7': "Seventy",
-                    '8': "Eighty",
-                    '9': "Ninety",
-                  };
+const units = {
+    '0': '',
+    '1': "One",
+    '2': "Two",
+    '3': "Three",
+    '4': "Four",
+    '5': "Five",
+    '6': "Six",
+    '7': "Seven",
+    '8': "Eight",
+    '9': "Nine",
+  };
   
-    let suffixes = {
-                    0: '',
-                    1: 'Thousand',
-                    2: 'Million',
-                    3: 'Billion'
-                  }
+  const dozens = {
+    '10': "Ten",
+    '11': "Eleven",
+    '12': "Tweve",
+    '13': "Thirteen",
+    '14': "Fourteen",
+    '15': "Fifteen",
+    '16': "Sixteen",
+    '17': "Seventeen",
+    '18': "Eighteen",
+    '19': "Nineteen",
+    '2': "Twenty",
+    '3': "Thirty",
+    '4': "Forty",
+    '5': "Fifty",
+    '6': "Sixty",
+    '7': "Seventy",
+    '8': "Eighty",
+    '9': "Ninety",
+  };
   
-    let result = '';
+  let suffixes = {
+    0: '',
+    1: 'Thousand',
+    2: 'Million',
+    3: 'Billion'
+  }
+  
+  const numToWords = (num) => {
+    if (num == 0)
+        return 'Zero'
+    
+    let words = [];
   
     const numAsString = num.toString();
   
-    let iterations = Math.ceil(numAsString.length / 3);
+    for (let i = numAsString.length - 1, iteration = 0; i >= 0; i -= 3, iteration++) {
+      let unitsDigit = numAsString[i];
+      let dozensDigit = numAsString[i - 1];
+      let hundredsDigit = numAsString[i - 2];
   
-    for (let i = 0; i < iterations; i++) {
-      let lastIterationIndex = (numAsString.length - 1) - (3 * i);
+      let unitWord = getUnitsWord(unitsDigit);
+      let dozensWord = getDozensWord(dozensDigit, unitsDigit);
+      let hundredsWord = getHundredsWord(hundredsDigit);
   
-      let lastDigit = numAsString[lastIterationIndex];
-      let middleDigit = numAsString[lastIterationIndex - 1];
-      let firstDigit = numAsString[lastIterationIndex - 2];
+      let suffix = suffixes[iteration];
   
-      let iterationResult = units[lastDigit];
+      let word = concatenateWords(hundredsWord, dozensWord, unitWord, suffix);
   
-      if (middleDigit && middleDigit != '0') {
-        iterationResult = dozens[middleDigit + lastDigit] || `${dozens[middleDigit]} ${units[lastDigit]}`;
-      }
-  
-      if (firstDigit && firstDigit != '0') {
-        iterationResult = `${units[firstDigit]} Hundred ${iterationResult}`.trim();
-      }
-  
-      result = `${iterationResult} ${suffixes[i]} ${result}`;
+      insertWordAtFirstPositionOfWords(word, words);
     }
   
-    return result.trim() || 'Zero';
+    return words.join(' ');
   };
+  
+  function getUnitsWord(unitsDigit) {
+    return unitsDigit != '0' ? units[unitsDigit] : '';
+  }
+  
+  function getDozensWord(dozensDigit, unitsDigit) {
+    let dozensWord = '';
+  
+    if (dozensDigit && dozensDigit != '0') {
+      dozensWord = dozens[dozensDigit + unitsDigit] || `${dozens[dozensDigit]} ${units[unitsDigit]}`;
+    }
+  
+    return dozensWord;
+  }
+  
+  function getHundredsWord(hundredsDigit) {
+    let hundredsWord = '';
+  
+    if (hundredsDigit && hundredsDigit != '0') {
+      hundredsWord = `${units[hundredsDigit]} Hundred`;
+    }
+  
+    return hundredsWord;
+  }
+  
+  function concatenateWords(hundredsWord, dozensWord, unitWord, suffix) {
+    let words = [];
+  
+    if (hundredsWord)
+      words.push(hundredsWord);
+  
+    if (dozensWord)
+      words.push(dozensWord);
+    else if (unitWord)
+      words.push(unitWord);
+  
+    if (suffix)
+      words.push(suffix);
+  
+    return words.join(' ');
+  }
+  
+  function insertWordAtFirstPositionOfWords(word, words) {
+    words.splice(0, 0, word);
+  }
   
   console.log(numToWords(0)); // Zero
   console.log(numToWords(6)); // six
